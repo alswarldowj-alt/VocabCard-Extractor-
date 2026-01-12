@@ -1,0 +1,31 @@
+from flask import Flask, send_from_directory
+import mimetypes
+import os
+
+app = Flask(__name__, static_folder='.')
+
+# Ensure .ts and .tsx files are served as JavaScript so the browser can process them
+mimetypes.add_type('application/javascript', '.ts')
+mimetypes.add_type('application/javascript', '.tsx')
+
+@app.route('/')
+def index():
+    """Serve the main index.html file."""
+    return send_from_directory('.', 'index.html')
+
+@app.route('/<path:path>')
+def serve_static(path):
+    """Serve other static files (images, scripts, styles)."""
+    # Prevent 404 logs for common missing development files
+    if path.endswith('.css') and not os.path.exists(path):
+        return "", 200, {'Content-Type': 'text/css'}
+    
+    return send_from_directory('.', path)
+
+if __name__ == '__main__':
+    print("==================================================")
+    print("VocabCard Extractor Python Backend Starting...")
+    print("URL: http://127.0.0.1:5000")
+    print("==================================================")
+    # debug=True allows for auto-reloading when you change the python code
+    app.run(debug=True, host='127.0.0.1', port=5000)

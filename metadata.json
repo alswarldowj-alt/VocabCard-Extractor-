@@ -1,0 +1,5 @@
+{
+  "name": "VocabCard Extractor (Python Powered)",
+  "description": "An AI-powered tool with a Python backend to batch process vocabulary sheets, extracting words into Excel and cropping illustrations into a ZIP archive.",
+  "requestFramePermissions": []
+}
