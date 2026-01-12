@@ -1,5 +1,6 @@
+
 {
-  "name": "VocabCard Extractor (Python Powered)",
-  "description": "An AI-powered tool with a Python backend to batch process vocabulary sheets, extracting words into Excel and cropping illustrations into a ZIP archive.",
+  "name": "VocabCard AI Extractor",
+  "description": "智能词汇卡提取工具，支持批量识别单词、自动切割插图，导出 Excel 与资源包。",
   "requestFramePermissions": []
 }
