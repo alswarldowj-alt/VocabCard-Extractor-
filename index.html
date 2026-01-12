@@ -7,10 +7,6 @@
     <title>批量词汇提取专家 - AI 插图提取工具</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script>
-        // 模拟环境
-        window.process = window.process || { env: { API_KEY: "" } };
-    </script>
     <script type="importmap">
 {
   "imports": {
@@ -33,6 +29,13 @@
       #root {
         min-height: 100vh;
       }
+      @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+      .animate-in { animation: fadeIn 0.5s ease-out; }
+      .scale-102 { transform: scale(1.02); }
+      .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+      .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+      .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
     </style>
 <link rel="stylesheet" href="/index.css">
 </head>
