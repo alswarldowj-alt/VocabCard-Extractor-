@@ -9,8 +9,10 @@
     <!-- 引入 Babel 用于实时转译 TSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script>
-        // 确保 process 对象存在，防止三方库或代码因访问未定义变量而崩溃
-        window.process = { env: {} };
+        // 只有当 process 不存在时才进行初始化，避免覆盖系统注入的环境变量
+        if (typeof window.process === 'undefined') {
+            window.process = { env: {} };
+        }
     </script>
     <script type="importmap">
 {
@@ -21,8 +23,8 @@
     "@google/genai": "https://esm.sh/@google/genai@1.3.0",
     "xlsx": "https://esm.sh/xlsx@0.18.5",
     "jszip": "https://esm.sh/jszip@3.10.1",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "react/": "https://esm.sh/react@^19.2.3/"
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/"
   }
 }
 </script>
@@ -43,7 +45,6 @@
 </head>
 <body>
     <div id="root"></div>
-    <!-- 使用 Babel 实时处理 index.tsx -->
     <script type="text/babel" data-presets="react,typescript" data-type="module" src="index.tsx"></script>
 <script type="module" src="/index.tsx"></script>
 </body>

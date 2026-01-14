@@ -104,10 +104,10 @@ const App = () => {
     setResults([]);
 
     try {
-      // 仅在点击时尝试读取 API_KEY，防止环境预加载问题
+      // 严格使用系统提供的 API_KEY
       const apiKey = process.env.API_KEY;
       if (!apiKey) {
-        throw new Error("API_KEY 未找到，请检查环境配置。");
+        throw new Error("检测到 API 密钥为空。请确保在环境设置中配置了有效的 API_KEY。");
       }
 
       const ai = new GoogleGenAI({ apiKey });
@@ -156,7 +156,8 @@ const App = () => {
             }
           });
 
-          const data = JSON.parse(response.text || '{"items":[]}');
+          const responseText = response.text || "{}";
+          const data = JSON.parse(responseText);
           const rawItems = data.items || [];
           
           if (rawItems.length === 0) throw new Error("未识别到有效内容");
@@ -185,14 +186,18 @@ const App = () => {
             idx === i ? { ...s, status: 'completed', progress: 100 } : s
           ));
         } catch (err: any) {
-          console.error("单个文件处理异常:", err);
+          console.error("处理异常:", err);
+          let userFriendlyError = err.message || "请求异常";
+          if (userFriendlyError.includes("API key")) {
+            userFriendlyError = "API 密钥无效或未配置，请联系管理员。";
+          }
           setFileStatuses(prev => prev.map((s, idx) => 
-            idx === i ? { ...s, status: 'error', error: err.message || "请求异常" } : s
+            idx === i ? { ...s, status: 'error', error: userFriendlyError } : s
           ));
         }
       }
     } catch (err: any) {
-      setGlobalError(err.message || "流程初始化失败");
+      setGlobalError(err.message || "初始化失败");
     } finally {
       setIsBusy(false);
     }
@@ -232,7 +237,7 @@ const App = () => {
       </header>
 
       {globalError && (
-        <div className="mb-8 p-4 bg-rose-50 border border-rose-100 text-rose-600 rounded-2xl flex items-center gap-3">
+        <div className="mb-8 p-4 bg-rose-50 border border-rose-100 text-rose-600 rounded-2xl flex items-center gap-3 shadow-sm">
           <XCircle size={20} />
           <p className="font-bold flex-1">{globalError}</p>
           <button onClick={() => setGlobalError(null)} className="text-rose-300 hover:text-rose-500 p-1">关闭</button>
@@ -240,7 +245,6 @@ const App = () => {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* 左侧控制栏 */}
         <div className="lg:col-span-4 space-y-6">
           <div 
             onClick={() => !isBusy && fileInputRef.current?.click()}
@@ -259,7 +263,7 @@ const App = () => {
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-black text-slate-800">任务队列 ({fileStatuses.length})</h3>
               {fileStatuses.length > 0 && !isBusy && (
-                <button onClick={processAll} className="bg-indigo-600 text-white px-4 py-1.5 rounded-lg text-sm font-bold shadow-lg">开始处理</button>
+                <button onClick={processAll} className="bg-indigo-600 text-white px-4 py-1.5 rounded-lg text-sm font-bold shadow-lg hover:bg-indigo-700 transition-colors">开始处理</button>
               )}
             </div>
             <div className="space-y-3 overflow-y-auto max-h-[400px] pr-2 custom-scrollbar text-left">
@@ -270,8 +274,14 @@ const App = () => {
                     <p className="text-xs font-bold text-slate-600 truncate flex-1">{status.file.name}</p>
                     {status.status === 'completed' && <CheckCircle2 size={16} className="text-emerald-500" />}
                     {status.status === 'processing' && <Loader2 size={16} className="text-indigo-600 animate-spin" />}
+                    {status.status === 'error' && <XCircle size={16} className="text-rose-500" />}
                   </div>
-                  {status.status === 'error' && <p className="text-[10px] text-rose-500 mt-1 ml-6">{status.error}</p>}
+                  {status.status === 'error' && <p className="text-[10px] text-rose-500 mt-1 ml-6 font-semibold">{status.error}</p>}
+                  {status.status === 'processing' && (
+                    <div className="mt-2 h-1 bg-slate-200 rounded-full overflow-hidden">
+                      <div className="h-full bg-indigo-500 transition-all duration-300" style={{ width: `${status.progress}%` }}></div>
+                    </div>
+                  )}
                 </div>
               ))}
               {fileStatuses.length === 0 && <p className="text-center py-10 text-slate-300 font-bold italic">暂无图片</p>}
@@ -279,7 +289,6 @@ const App = () => {
           </div>
         </div>
 
-        {/* 右侧结果展示 */}
         <div className="lg:col-span-8 space-y-6">
           {results.length > 0 && (
             <div className="grid grid-cols-2 gap-4">
@@ -318,5 +327,7 @@ const App = () => {
   );
 };
 
-const root = document.getElementById('root');
-if (root) createRoot(root).render(<App />);
+const rootElement = document.getElementById('root');
+if (rootElement) {
+  createRoot(rootElement).render(<App />);
+}
