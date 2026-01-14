@@ -20,7 +20,14 @@ export const processImages = async (
   imageIndex: number,
   onProgress: (p: number) => void
 ): Promise<VocabItem[]> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  // 安全访问 API_KEY
+  const apiKey = (globalThis as any).process?.env?.API_KEY || (typeof process !== 'undefined' ? process.env.API_KEY : undefined);
+  
+  if (!apiKey) {
+    throw new Error("API_KEY 未找到。");
+  }
+
+  const ai = new GoogleGenAI({ apiKey });
   const base64 = await fileToBase64(file);
   
   onProgress(20);
@@ -88,7 +95,7 @@ export const processImages = async (
       const { url, blob } = await cropImage(file, { ymin, xmin, ymax, xmax });
       processedItems.push({
         id: 0,
-        localId: i + 1, // 设置在原图中的序号
+        localId: i + 1, 
         word: item.word,
         originalImageIndex: imageIndex,
         boundingBox: { ymin, xmin, ymax, xmax },

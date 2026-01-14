@@ -3,7 +3,7 @@ import React, { useState, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import { 
   Upload, ScanSearch, Loader2, FileSpreadsheet, 
-  Archive, CheckCircle2, Image as ImageIcon,
+  Archive, CheckCircle2, AlertCircle, Image as ImageIcon,
   Trash2, FileType, XCircle
 } from 'lucide-react';
 import { GoogleGenAI, Type } from "@google/genai";
@@ -104,12 +104,12 @@ const App = () => {
     setResults([]);
 
     try {
-      // 修复核心：使用 typeof 检查 process 变量，防止在浏览器中抛出 ReferenceError
-      // 同时依然引用规范要求的 process.env.API_KEY
-      const apiKey = typeof process !== 'undefined' ? process.env.API_KEY : (globalThis as any).process?.env?.API_KEY;
+      // 核心修复：安全访问 process.env.API_KEY
+      // 使用 globalThis 防止直接访问 process 时在 Safari 中报错
+      const apiKey = (globalThis as any).process?.env?.API_KEY || (typeof process !== 'undefined' ? process.env.API_KEY : undefined);
       
       if (!apiKey) {
-        throw new Error("API Key 未配置，请检查环境设置。");
+        throw new Error("API_KEY 未找到。请确保平台已正确注入环境密钥。");
       }
 
       const ai = new GoogleGenAI({ apiKey });
@@ -177,7 +177,7 @@ const App = () => {
               };
               setResults(prev => [...prev, newItem]);
             } catch (err) {
-              console.error("裁剪失败:", err);
+              console.error("Cropping failed:", err);
             }
             
             setFileStatuses(prev => prev.map((s, idx) => 
@@ -189,15 +189,15 @@ const App = () => {
             idx === i ? { ...s, status: 'completed', progress: 100 } : s
           ));
         } catch (err: any) {
-          console.error("单文件处理错误:", err);
+          console.error("Single file error:", err);
           setFileStatuses(prev => prev.map((s, idx) => 
             idx === i ? { ...s, status: 'error', error: err.message || "请求失败" } : s
           ));
         }
       }
     } catch (err: any) {
-      console.error("全局处理错误:", err);
-      setGlobalError("识别中断: " + (err.message || "请检查网络或配置"));
+      console.error("Global processing error:", err);
+      setGlobalError("识别中断: " + (err.message || "未知错误"));
     } finally {
       setIsBusy(false);
     }
@@ -212,7 +212,7 @@ const App = () => {
     const ws = XLSX.utils.json_to_sheet(exportData);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Vocabulary");
-    XLSX.writeFile(wb, `词汇提取表_${new Date().getTime()}.xlsx`);
+    XLSX.writeFile(wb, `词汇表_${new Date().getTime()}.xlsx`);
   };
 
   const exportZip = async () => {
