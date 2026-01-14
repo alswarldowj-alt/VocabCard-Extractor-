@@ -6,12 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>批量词汇提取专家 - AI 插图提取工具</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script>
-        // 关键修复：提前定义 process 对象，防止浏览器抛出 ReferenceError
-        if (typeof window.process === 'undefined') {
-            window.process = { env: {} };
-        }
+        // 极致防御：确保 process 对象在全局范围内始终可用
+        window.process = window.process || { env: {} };
     </script>
     <script type="importmap">
 {
@@ -22,8 +19,8 @@
     "@google/genai": "https://esm.sh/@google/genai@1.3.0",
     "xlsx": "https://esm.sh/xlsx@0.18.5",
     "jszip": "https://esm.sh/jszip@3.10.1",
-    "react/": "https://esm.sh/react@^19.2.3/",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/"
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/"
   }
 }
 </script>
@@ -32,22 +29,20 @@
         margin: 0;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         background-color: #f8fafc;
+        overflow-x: hidden;
       }
-      #root {
-        min-height: 100vh;
-      }
-      @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-      .animate-in { animation: fadeIn 0.4s ease-out; }
+      #root { min-height: 100vh; }
+      @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+      .animate-in { animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
       .custom-scrollbar::-webkit-scrollbar { width: 6px; }
       .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-      .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
-      .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
+      .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     </style>
 <link rel="stylesheet" href="/index.css">
 </head>
 <body>
     <div id="root"></div>
-    <script type="text/babel" data-presets="react,typescript" data-type="module" src="index.tsx"></script>
+    <script type="module" src="index.tsx"></script>
 <script type="module" src="/index.tsx"></script>
 </body>
 </html>
