@@ -6,9 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>批量词汇提取专家 - AI 插图提取工具</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Babel 用于实时转译 TSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script>
-        // 极致防御：确保 process 对象在全局范围内始终可用
-        window.process = window.process || { env: {} };
+        // 确保 process 对象存在，防止三方库或代码因访问未定义变量而崩溃
+        window.process = { env: {} };
     </script>
     <script type="importmap">
 {
@@ -29,11 +31,10 @@
         margin: 0;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         background-color: #f8fafc;
-        overflow-x: hidden;
       }
       #root { min-height: 100vh; }
       @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-      .animate-in { animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+      .animate-in { animation: fadeIn 0.5s ease-out; }
       .custom-scrollbar::-webkit-scrollbar { width: 6px; }
       .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
       .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
@@ -42,7 +43,8 @@
 </head>
 <body>
     <div id="root"></div>
-    <script type="module" src="index.tsx"></script>
+    <!-- 使用 Babel 实时处理 index.tsx -->
+    <script type="text/babel" data-presets="react,typescript" data-type="module" src="index.tsx"></script>
 <script type="module" src="/index.tsx"></script>
 </body>
 </html>
