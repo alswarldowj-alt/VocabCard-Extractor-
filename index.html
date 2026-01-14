@@ -7,6 +7,12 @@
     <title>批量词汇提取专家 - AI 插图提取工具</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script>
+        // 关键修复：提前定义 process 对象，防止浏览器抛出 ReferenceError
+        if (typeof window.process === 'undefined') {
+            window.process = { env: {} };
+        }
+    </script>
     <script type="importmap">
 {
   "imports": {

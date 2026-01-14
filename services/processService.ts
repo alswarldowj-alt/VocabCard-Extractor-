@@ -20,14 +20,8 @@ export const processImages = async (
   imageIndex: number,
   onProgress: (p: number) => void
 ): Promise<VocabItem[]> => {
-  // 安全访问 API_KEY
-  const apiKey = (globalThis as any).process?.env?.API_KEY || (typeof process !== 'undefined' ? process.env.API_KEY : undefined);
-  
-  if (!apiKey) {
-    throw new Error("API_KEY 未找到。");
-  }
-
-  const ai = new GoogleGenAI({ apiKey });
+  // 严格遵循系统规范要求的 API 密钥获取方式
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const base64 = await fileToBase64(file);
   
   onProgress(20);
@@ -103,7 +97,7 @@ export const processImages = async (
         blob
       });
     } catch (err) {
-      console.warn("Failed to crop image for", item.word);
+      console.warn("裁剪失败:", item.word);
     }
     
     onProgress(50 + ((i + 1) / rawItems.length) * 50);

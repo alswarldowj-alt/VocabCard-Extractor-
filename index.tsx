@@ -3,7 +3,7 @@ import React, { useState, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import { 
   Upload, ScanSearch, Loader2, FileSpreadsheet, 
-  Archive, CheckCircle2, AlertCircle, Image as ImageIcon,
+  Archive, CheckCircle2, Image as ImageIcon,
   Trash2, FileType, XCircle
 } from 'lucide-react';
 import { GoogleGenAI, Type } from "@google/genai";
@@ -99,20 +99,19 @@ const App = () => {
   const processAll = async () => {
     if (fileStatuses.length === 0 || isBusy) return;
 
+    // 严格检查密钥是否真正可用
+    if (!process.env.API_KEY) {
+      setGlobalError("检测到 API_KEY 尚未就绪，请稍后或检查环境配置。");
+      return;
+    }
+
     setIsBusy(true);
     setGlobalError(null);
     setResults([]);
 
     try {
-      // 核心修复：安全访问 process.env.API_KEY
-      // 使用 globalThis 防止直接访问 process 时在 Safari 中报错
-      const apiKey = (globalThis as any).process?.env?.API_KEY || (typeof process !== 'undefined' ? process.env.API_KEY : undefined);
-      
-      if (!apiKey) {
-        throw new Error("API_KEY 未找到。请确保平台已正确注入环境密钥。");
-      }
-
-      const ai = new GoogleGenAI({ apiKey });
+      // 严格遵循系统指令要求的初始化方式
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
       for (let i = 0; i < fileStatuses.length; i++) {
         const current = fileStatuses[i];
@@ -177,7 +176,7 @@ const App = () => {
               };
               setResults(prev => [...prev, newItem]);
             } catch (err) {
-              console.error("Cropping failed:", err);
+              console.error("裁剪失败:", err);
             }
             
             setFileStatuses(prev => prev.map((s, idx) => 
@@ -189,15 +188,15 @@ const App = () => {
             idx === i ? { ...s, status: 'completed', progress: 100 } : s
           ));
         } catch (err: any) {
-          console.error("Single file error:", err);
+          console.error("文件识别失败:", err);
           setFileStatuses(prev => prev.map((s, idx) => 
             idx === i ? { ...s, status: 'error', error: err.message || "请求失败" } : s
           ));
         }
       }
     } catch (err: any) {
-      console.error("Global processing error:", err);
-      setGlobalError("识别中断: " + (err.message || "未知错误"));
+      console.error("识别中断:", err);
+      setGlobalError("识别中断: " + (err.message || "请检查网络或配置"));
     } finally {
       setIsBusy(false);
     }
@@ -212,7 +211,7 @@ const App = () => {
     const ws = XLSX.utils.json_to_sheet(exportData);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Vocabulary");
-    XLSX.writeFile(wb, `词汇表_${new Date().getTime()}.xlsx`);
+    XLSX.writeFile(wb, `提取表_${new Date().getTime()}.xlsx`);
   };
 
   const exportZip = async () => {
@@ -249,7 +248,7 @@ const App = () => {
       {globalError && (
         <div className="mb-10 p-6 bg-rose-50 border-2 border-rose-100 text-rose-600 rounded-[2rem] flex items-center gap-4 shadow-lg shadow-rose-100/50">
           <XCircle size={28} className="flex-shrink-0" />
-          <div className="flex-1">
+          <div className="flex-1 text-left">
             <p className="font-black text-lg">无法执行操作</p>
             <p className="text-sm font-bold opacity-80">{globalError}</p>
           </div>
@@ -343,12 +342,12 @@ const App = () => {
             {results.length > 0 ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-10 overflow-y-auto max-h-[850px] pr-4 custom-scrollbar">
                 {results.map((item, idx) => (
-                  <div key={idx} className="group bg-slate-50/50 rounded-[2.5rem] border-2 border-slate-100 overflow-hidden hover:shadow-2xl transition-all border-b-[10px] border-b-slate-200 hover:border-b-indigo-500 hover:-translate-y-3">
+                  <div key={idx} className="group bg-slate-50/50 rounded-[2.5rem] border-2 border-slate-100 overflow-hidden hover:shadow-2xl transition-all border-b-[10px] border-b-slate-200 hover:border-b-indigo-500 hover:-translate-y-3 text-center">
                     <div className="aspect-square bg-white flex items-center justify-center p-8 relative">
                       <img src={item.croppedImageUrl} alt={item.word} className="max-w-full max-h-full object-contain drop-shadow-xl transition-transform duration-700 group-hover:scale-125" />
                       <div className="absolute top-5 left-5"><span className="text-xs font-black bg-indigo-600 text-white px-3.5 py-1.5 rounded-xl shadow-xl">#{idx + 1}</span></div>
                     </div>
-                    <div className="p-8 bg-white border-t-2 border-slate-100 text-center">
+                    <div className="p-8 bg-white border-t-2 border-slate-100">
                       <p className="font-black text-slate-900 text-2xl truncate mb-1" title={item.word}>{item.word}</p>
                     </div>
                   </div>
